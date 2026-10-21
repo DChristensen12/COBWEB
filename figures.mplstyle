@@ -1,0 +1,12 @@
+figure.dpi: 110
+savefig.dpi: 300
+savefig.bbox: tight
+font.size: 10
+axes.spines.top: False
+axes.spines.right: False
+axes.titlesize: 10
+axes.labelsize: 10
+legend.frameon: False
+legend.fontsize: 9
+lines.linewidth: 1.8
+lines.markersize: 4
