@@ -16,7 +16,7 @@ def subspace_energy(H: np.ndarray, keep: np.ndarray) -> float:
 
 def weight_order(c0: np.ndarray) -> np.ndarray:
     """Configurations sorted by exact weight, a reference that needs the answer"""
-    return np.argsort(c0**2, kind="stable")[::-1]
+    return np.argsort(np.abs(c0) ** 2, kind="stable")[::-1]
 
 
 def reference_config(H: np.ndarray, tol: float = 1e-9) -> int:
@@ -67,7 +67,7 @@ def sample_order(c0: np.ndarray, n_shots: int, rng: np.random.Generator):
     """Measure the state n_shots times, return what came back, most frequent first"""
     # qiskit-addon-sqd takes measured configurations and counts like these as input
     # https://github.com/Qiskit/qiskit-addon-sqd/blob/main/qiskit_addon_sqd/subsampling.py
-    weights = c0**2 / np.sum(c0**2)
+    weights = np.abs(c0) ** 2 / np.sum(np.abs(c0) ** 2)  # circuit states are complex
     draws = rng.choice(len(weights), size=n_shots, p=weights)
     found, counts = np.unique(draws, return_counts=True)
     order = np.argsort(counts, kind="stable")[::-1]
@@ -78,7 +78,7 @@ def discovery_curve(
     c0: np.ndarray, shots: np.ndarray, rng: np.random.Generator
 ) -> np.ndarray:
     """Distinct configurations seen after each number of shots, from one long run"""
-    weights = c0**2 / np.sum(c0**2)
+    weights = np.abs(c0) ** 2 / np.sum(np.abs(c0) ** 2)  # circuit states are complex
     draws = rng.choice(len(weights), size=int(np.max(shots)), p=weights)
 
     # A configuration counts as seen at the first shot that drew it

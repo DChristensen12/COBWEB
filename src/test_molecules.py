@@ -15,8 +15,11 @@ def build(name):
 
 def pyscf_fci_energy(name):
 
-    mf = scf.RHF(gto.M(**MOLECULES[name], verbose=0)).run()
-    return fci.FCI(mf).kernel()[0]
+    # Small systems would otherwise diagonalize the same pspace block we build,
+    # so force PySCF's matrix-vector route to make this a real check
+    solver = fci.FCI(scf.RHF(gto.M(**MOLECULES[name], verbose=0)).run())
+    solver.davidson_only = True
+    return solver.kernel()[0]
 
 
 def test_hamiltonians_match_pyscf_fci():
@@ -25,7 +28,9 @@ def test_hamiltonians_match_pyscf_fci():
         h1, h2, ecore, norb, nelec, _ = integrals(name)
         H = fci_hamiltonian(h1, h2, ecore, norb, nelec)
         assert np.allclose(H, H.T)
-        assert np.isclose(eigh(H, eigvals_only=True)[0], pyscf_fci_energy(name))
+        assert np.isclose(
+            eigh(H, eigvals_only=True)[0], pyscf_fci_energy(name), rtol=0, atol=1e-8
+        )
 
 
 def test_water_matches_pyscf_fci():
@@ -35,7 +40,9 @@ def test_water_matches_pyscf_fci():
     h1, h2, ecore, norb, nelec, _ = integrals("h2o")
     H = fci_hamiltonian(h1, h2, ecore, norb, nelec)
     assert len(H) == 441
-    assert np.isclose(eigh(H, eigvals_only=True)[0], pyscf_fci_energy("h2o"))
+    assert np.isclose(
+        eigh(H, eigvals_only=True)[0], pyscf_fci_energy("h2o"), rtol=0, atol=1e-8
+    )
 
 
 def test_labels_are_in_fci_order():
@@ -50,7 +57,7 @@ def test_labels_are_in_fci_order():
 
         hf = (1 << nelec[0]) - 1, (1 << nelec[1]) - 1  # lowest orbitals filled
         k = np.where((labels[:, 0] == hf[0]) & (labels[:, 1] == hf[1]))[0][0]
-        assert np.isclose(H[k, k], e_hf)
+        assert np.isclose(H[k, k], e_hf, rtol=0, atol=1e-8)
 
 
 def test_reference_config_is_hartree_fock():

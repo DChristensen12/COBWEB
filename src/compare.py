@@ -12,6 +12,19 @@ from utils import (
 )
 
 
+def sample_errors(H, c, E0, sizes, shots, n_shots, n_repeats, rng):
+    """Errors, configurations found and discovery curves over repeated sampling runs"""
+
+    errors, n_found, discovered = [], [], []
+    for _ in range(n_repeats):
+        found, _ = sample_order(c, n_shots, rng)
+        errors.append(errors_by_size(H, found, E0, sizes))
+        n_found.append(len(found))
+        discovered.append(discovery_curve(c, shots, rng))
+    # repeats x sizes, repeats, repeats x shots
+    return np.stack(errors), np.array(n_found), np.stack(discovered)
+
+
 def main(
     results_dir: str,
     system: str,
@@ -51,18 +64,26 @@ def main(
         H, epstein_nesbet_order(H, seed_config, n_configs, batch), E[0], sizes
     )
 
-    print(f"Sampling, {n_repeats} repeats of {n_shots} shots")
     rng = np.random.default_rng(seed)
     shots = np.unique(np.geomspace(10, 100 * n_shots, 30).astype(int))
-    err_sample, n_found, discovered = [], [], []
-    for i in range(n_repeats):
-        found, _ = sample_order(c0, n_shots, rng)
-        err_sample.append(errors_by_size(H, found, E[0], sizes))
-        n_found.append(len(found))
-        discovered.append(discovery_curve(c0, shots, rng))
-    err_sample = np.stack(err_sample)  # repeats x sizes
-    discovered = np.stack(discovered)  # repeats x shots
-    print(f"Sampling found {np.mean(n_found):.0f} of {n_configs} configurations")
+
+    print(f"Sampling the exact state, {n_repeats} repeats of {n_shots} shots")
+    err_sample, n_found, discovered = sample_errors(
+        H, c0, E[0], sizes, shots, n_shots, n_repeats, rng
+    )
+    print(f"Found {np.mean(n_found):.0f} of {n_configs} configurations")
+
+    # Molecules also get a circuit state from circuits.py, sampled the same way
+    extra = {}
+    circuit_path = f"{results_dir}/circuits/{system}.npz"
+    if os.path.exists(circuit_path):
+        c_circuit = np.load(circuit_path)["c"]
+        print(f"Sampling the LUCJ circuit, {n_repeats} repeats of {n_shots} shots")
+        err, found, disc = sample_errors(
+            H, c_circuit, E[0], sizes, shots, n_shots, n_repeats, rng
+        )
+        print(f"Found {np.mean(found):.0f} of {n_configs} configurations")
+        extra = dict(err_circuit=err, n_found_circuit=found, discovered_circuit=disc)
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     np.savez(
@@ -71,12 +92,13 @@ def main(
         err_weight=err_weight,
         err_en=err_en,
         err_sample=err_sample,
-        n_found=np.array(n_found),
+        n_found=n_found,
         shots=shots,
         discovered=discovered,
         n_shots=n_shots,
         n_configs=n_configs,
         units=units,
+        **extra,
     )
 
 

@@ -24,7 +24,7 @@ def test_dvr_matches_exact_morse_levels():
     # Morse levels are known in closed form, E_n = w(n + 1/2) - w^2 (n + 1/2)^2 / 4D
     n = np.arange(8)
     exact = omega * (n + 0.5) - omega**2 / (4 * D) * (n + 0.5) ** 2
-    assert np.allclose(E[:8], exact, atol=1e-10)
+    assert np.allclose(E[:8], exact, rtol=0, atol=1e-10)
 
 
 def test_hubbard_free_fermions():
@@ -33,7 +33,9 @@ def test_hubbard_free_fermions():
     # which for an open chain are -2t cos(k pi / (L + 1))
     H, _ = hubbard_chain(6, 3, 3, U=0.0)
     eps = np.sort(-2 * np.cos(np.arange(1, 7) * np.pi / 7))
-    assert np.isclose(eigh(H, eigvals_only=True)[0], 2 * eps[:3].sum())
+    assert np.isclose(
+        eigh(H, eigvals_only=True)[0], 2 * eps[:3].sum(), rtol=0, atol=1e-10
+    )
 
 
 def test_hubbard_matches_pyscf():
@@ -52,7 +54,7 @@ def test_hubbard_matches_pyscf():
     e_pyscf, _ = fci.direct_spin1.kernel(h1, eri, n, (3, 3))
 
     H, _ = hubbard_chain(n, 3, 3, U=U)
-    assert np.isclose(eigh(H, eigvals_only=True)[0], e_pyscf, atol=1e-9)
+    assert np.isclose(eigh(H, eigvals_only=True)[0], e_pyscf, rtol=0, atol=1e-9)
 
 
 def test_hamiltonians_are_symmetric():
@@ -74,7 +76,7 @@ def test_full_subspace_is_exact():
 
     H, _ = hubbard_chain(6, 3, 3)
     E = eigh(H, eigvals_only=True)
-    assert np.isclose(subspace_energy(H, np.arange(len(H))), E[0])
+    assert np.isclose(subspace_energy(H, np.arange(len(H))), E[0], rtol=0, atol=1e-10)
 
 
 def test_subspace_energy_is_variational():
