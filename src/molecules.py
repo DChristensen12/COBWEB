@@ -10,7 +10,7 @@ from scipy.linalg import eigh
 MOLECULES = {
     "h4": dict(atom="H 0 0 0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5", basis="6-31g"),
     "lih": dict(atom="Li 0 0 0; H 0 0 1.6", basis="sto-3g"),
-    # TODO add water as "h2o" in sto-3g, any reasonable geometry works
+    "h20": dict(atom="H -1.1094 1.4315 0; O 0 0 0; H 1.1094 1.4315 0", basis="sto-3g"),
 }
 
 
