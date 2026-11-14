@@ -6,11 +6,18 @@ from hamiltonians import coupled_modes, dvr_kinetic, hubbard_chain
 from utils import (
     discovery_curve,
     epstein_nesbet_order,
+    epstein_nesbet_targets,
+    fundamental_errors_by_size,
+    fundamental_rows,
     reference_config,
     sample_order,
+    sample_targets_order,
     subspace_energy,
+    subspace_fundamentals,
+    target_states,
     weight_order,
 )
+from vibrations import fundamentals, vci_hamiltonian
 
 
 def test_dvr_matches_exact_morse_levels():
@@ -139,3 +146,60 @@ def test_reference_config_breaks_ties_physically():
 
     H, labels = coupled_modes(3, 4)
     assert tuple(labels[reference_config(H)]) == (0, 0, 0)
+
+
+@pytest.fixture(scope="module")
+def small_vci():
+    # Three made-up modes with enough coupling that every eigenstate is mixed
+    omega = np.array([800.0, 1500.0, 3000.0])
+    phi3, phi4 = np.zeros((3,) * 3), np.zeros((3,) * 4)
+    for i, j, k, v in [(0, 0, 1, -120.0), (1, 1, 2, 90.0), (0, 1, 2, 60.0)]:
+        for perm in {(i, j, k), (i, k, j), (j, i, k), (j, k, i), (k, i, j), (k, j, i)}:
+            phi3[perm] = v
+    phi4[0, 0, 0, 0] = 40.0
+    H, labels = vci_hamiltonian(omega, phi3, phi4, 5)
+    E, C = eigh(H)
+    return H, labels, C, fundamentals(E, C, labels)
+
+
+def test_fundamental_rows(small_vci):
+
+    H, labels, _, _ = small_vci
+    rows = fundamental_rows(labels)
+    assert labels[rows[0]].sum() == 0
+    assert np.array_equal(labels[rows[1:]], np.eye(3, dtype=int))
+
+
+def test_subspace_fundamentals(small_vci):
+
+    H, labels, _, nu = small_vci
+    rows = fundamental_rows(labels)
+    assert np.allclose(subspace_fundamentals(H, np.arange(len(H)), rows), nu)
+
+    # Leave out mode 1's one-quantum row and its fundamental can't be found
+    keep = np.delete(np.arange(len(H)), rows[2])
+    assert np.isnan(subspace_fundamentals(H, keep, rows)).tolist() == [
+        False,
+        True,
+        False,
+    ]
+
+
+def test_epstein_nesbet_targets_full_space(small_vci):
+
+    # TASK 6 in the member guide. Grow the space all the way with
+    # epstein_nesbet_targets and check the seeds come first, every row appears
+    # once, and the fundamentals at full size match nu
+    raise NotImplementedError("Task 6 in the member guide")
+
+
+def test_sample_targets_order(small_vci):
+
+    H, labels, C, _ = small_vci
+    rows = fundamental_rows(labels)
+    states = C[:, target_states(C, rows)] * 1j  # circuit states can be complex
+    found, counts = sample_targets_order(states, 4001, np.random.default_rng(0))
+    assert counts.sum() == 4000  # 1000 shots for each of the 4 states
+    assert np.all(np.diff(counts) <= 0)
+    assert set(rows) <= set(found.tolist())
+    assert len(set(found.tolist())) == len(found)

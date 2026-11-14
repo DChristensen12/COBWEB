@@ -2,7 +2,7 @@ import ffsim
 import numpy as np
 from scipy.linalg import eigh
 
-from circuits import configs_from_bitstrings, lucj_state
+from circuits import configs_from_bitstrings, interaction_pairs, lucj_state
 from molecules import determinant_labels, fci_hamiltonian, integrals
 from utils import sample_order
 
@@ -59,3 +59,24 @@ def test_sampling_handles_complex_amplitudes():
     a = sample_order(vec, 5000, np.random.default_rng(3))
     b = sample_order(np.abs(vec), 5000, np.random.default_rng(3))
     assert np.array_equal(a[0], b[0]) and np.array_equal(a[1], b[1])
+
+
+def test_heavy_hex_pairs():
+
+    # Heavy-hex keeps the same-spin chain but links alpha and beta only every
+    # fourth orbital
+    square_aa, square_ab = interaction_pairs(8, "square")
+    aa, ab = interaction_pairs(8, "heavy-hex")
+    assert aa == square_aa == [(p, p + 1) for p in range(7)]
+    assert ab == [(0, 0), (4, 4)]
+    assert interaction_pairs(6, "heavy-hex")[1] == [(0, 0), (4, 4)]
+    assert interaction_pairs(3, "heavy-hex")[1] == [(0, 0)]
+
+
+def test_heavy_hex_is_variational():
+
+    h1, h2, ecore, norb, nelec, _ = integrals("lih")
+    E0 = eigh(fci_hamiltonian(h1, h2, ecore, norb, nelec), eigvals_only=True)[0]
+    _, e_square, _, _ = lucj_state("lih")
+    _, e_hh, _, _ = lucj_state("lih", pattern="heavy-hex")
+    assert E0 - 1e-9 <= e_square and E0 - 1e-9 <= e_hh

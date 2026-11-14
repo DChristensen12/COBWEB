@@ -10,7 +10,7 @@ from scipy.linalg import eigh
 MOLECULES = {
     "h4": dict(atom="H 0 0 0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5", basis="6-31g"),
     "lih": dict(atom="Li 0 0 0; H 0 0 1.6", basis="sto-3g"),
-    "h2o": dict(atom="O 0 0 0; H 0 -0.757 0.587; H 0 0.757 0.587", basis="sto-3g"),
+    "h2o": dict(atom="O 0 0 0; H 0.757 0.586 0; H -0.757 0.586 0", basis="sto-3g"),
 }
 
 
@@ -27,9 +27,11 @@ def integrals(name: str):
 def determinant_labels(norb: int, nelec: tuple[int, int]) -> np.ndarray:
     """One (alpha, beta) bit-mask pair per determinant, in PySCF's FCI vector order"""
 
-    # TODO cistring.make_strings gives the bit masks for one spin. PySCF stores the
-    # FCI vector alpha-major, so row ia * n_beta + ib is (alpha[ia], beta[ib])
-    raise NotImplementedError("determinant_labels is a week 2 contribution spot")
+    # PySCF stores the FCI vector alpha-major, so row ia * n_beta + ib is
+    # (alpha[ia], beta[ib])
+    alpha = cistring.make_strings(range(norb), nelec[0])
+    beta = cistring.make_strings(range(norb), nelec[1])
+    return np.array([(a, b) for a in alpha for b in beta])
 
 
 def fci_hamiltonian(h1, h2, ecore, norb: int, nelec: tuple[int, int]) -> np.ndarray:

@@ -96,3 +96,85 @@ def errors_by_size(
             for k in sizes
         ]
     )
+
+
+def fundamental_rows(labels: np.ndarray) -> np.ndarray:
+    """Row of the all-zero state, then the row with one quantum in each mode"""
+    total = labels.sum(1)
+    ones = [
+        np.where((total == 1) & (labels[:, i] == 1))[0][0]
+        for i in range(labels.shape[1])
+    ]
+    return np.array([np.where(total == 0)[0][0]] + ones)
+
+
+def target_states(C: np.ndarray, rows) -> np.ndarray:
+    """Eigenstate that looks most like each row, with the ground state for the first"""
+    return np.array([0] + [int(np.argmax(C[row, 1:] ** 2)) + 1 for row in rows[1:]])
+
+
+def subspace_fundamentals(H: np.ndarray, keep: np.ndarray, rows) -> np.ndarray:
+    """Fundamentals from H restricted to keep, nan for modes whose row was not kept"""
+
+    keep = np.asarray(keep)
+    nu = np.full(len(rows) - 1, np.nan)
+    if len(keep) < 2:
+        return nu
+    E, C = eigh(H[np.ix_(keep, keep)])
+    where = {int(k): n for n, k in enumerate(keep)}
+    for i, row in enumerate(rows[1:]):
+        if int(row) in where:
+            nu[i] = E[target_states(C, [0, where[int(row)]])[1]] - E[0]
+    return nu
+
+
+def fundamental_errors_by_size(
+    H: np.ndarray, order: np.ndarray, rows, nu: np.ndarray, sizes: np.ndarray
+) -> np.ndarray:
+    """Largest fundamental error for each prefix of an ordering, nan until every mode is in"""
+    return np.array(
+        [
+            (
+                np.max(np.abs(subspace_fundamentals(H, order[:k], rows) - nu))
+                if k <= len(order)
+                else np.nan
+            )
+            for k in sizes
+        ]
+    )
+
+
+def epstein_nesbet_targets(
+    H: np.ndarray, seeds: list[int], n_keep: int, batch: int = 8
+) -> np.ndarray:
+    """Grow one space for several states at once, each configuration scored by its best target"""
+    # The multi-state version of epstein_nesbet_order. Each seed picks out one target,
+    # the eigenstate that looks most like it, and seeds stay at the front of keep
+    assert n_keep <= len(H), "cannot keep more configurations than exist"
+    keep = list(seeds)
+    diag = np.diag(H)
+
+    while len(keep) < n_keep:
+        E, C = eigh(H[np.ix_(keep, keep)])
+        scores = np.zeros(len(H))
+        for state in target_states(C, range(len(seeds))):
+            psi = np.zeros(len(H))
+            psi[keep] = C[:, state]
+            gap = np.abs(E[state] - diag)
+            gap[gap < 1e-12] = 1e-12
+            scores = np.maximum(scores, (H @ psi) ** 2 / gap)
+        scores[keep] = -1.0
+
+        order = np.argsort(scores, kind="stable")[::-1]
+        keep.extend(order[scores[order] >= 0][:batch].tolist())
+
+    return np.array(keep[:n_keep])
+
+
+def sample_targets_order(states: np.ndarray, n_shots: int, rng: np.random.Generator):
+    """Measure every target state, return what came back from all of them, most frequent first"""
+
+    # TASK 5 in the member guide. states has one target state per column. Split the
+    # shots evenly between the columns, sample each one the way sample_order does,
+    # and return the rows that came back from all of them with their total counts
+    raise NotImplementedError("Task 5 in the member guide")

@@ -62,8 +62,11 @@ def test_labels_are_in_fci_order():
 
 def test_reference_config_is_hartree_fock():
 
-    # TODO the cheapest determinant on the diagonal should be Hartree-Fock, the usual
-    # starting point for selected CI. For h4 and lih, build H with integrals and
-    # fci_hamiltonian, then check the diagonal entry at reference_config(H) equals
-    # the Hartree-Fock energy that integrals returns
-    raise NotImplementedError("write this test")
+    # The cheapest determinant on the diagonal should be Hartree-Fock, which is the
+    # usual starting point for selected CI
+    for name in ["h4", "lih"]:
+        H, labels, norb, nelec, e_hf = build(name)
+        k = reference_config(H)
+        assert np.isclose(H[k, k], e_hf, rtol=0, atol=1e-8)
+        assert labels[k, 0] == (1 << nelec[0]) - 1
+        assert labels[k, 1] == (1 << nelec[1]) - 1

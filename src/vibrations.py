@@ -18,8 +18,7 @@ METHOD = dict(xc="b3lyp", basis="6-31+g(d,p)")
 # Starting geometries in angstrom, the optimizer takes them the rest of the way
 VIBRATIONS = {
     "water": "O 0 0 0.117; H 0 0.757 -0.467; H 0 -0.757 -0.467",
-    # TODO add formic acid as "formic_acid". A rough geometry is fine as long as it is
-    # the trans conformer, with the O-H hydrogen on the same side as the C=O oxygen
+    # TASK 1 in the member guide. Add trans formic acid here as "formic_acid"
 }
 
 # VCI basis size per molecule. Formic acid stops at 4 because its quartic force
@@ -31,9 +30,9 @@ MAX_QUANTA = {"water": 6, "formic_acid": 4}
 # Measured gas-phase fundamentals in cm-1, lowest to highest
 EXPERIMENT = {
     "water": [1595, 3657, 3756],
-    # TODO add the nine formic acid fundamentals from Table I of Nejad and Sibert,
-    # J. Chem. Phys. 154, 064301 (2021), https://doi.org/10.1063/5.0039237. The older
-    # NIST list puts the O-H bend at 1229, which turned out to be a torsion overtone
+    # TASK 1 in the member guide. Add the nine formic acid fundamentals from Table I
+    # of Nejad and Sibert, J. Chem. Phys. 154, 064301 (2021),
+    # https://doi.org/10.1063/5.0039237, not the older NIST list
 }
 
 
@@ -187,10 +186,10 @@ def converged_quanta(
 ):
     """Smallest max_quanta whose fundamentals move by less than tol when it goes up by one"""
 
-    # TODO build the VCI matrix at max_quanta and at max_quanta + 1, starting from
-    # start, and return (max_quanta, fundamentals) for the first pair that agrees to
-    # within tol. Raise an error if nothing agrees by stop
-    raise NotImplementedError("converged_quanta is a week 4 contribution spot")
+    # TASK 2 in the member guide. Build the VCI matrix at max_quanta and at
+    # max_quanta + 1, starting from start, and return (max_quanta, fundamentals) for
+    # the first pair that agrees to within tol. Raise an error if nothing agrees by stop
+    raise NotImplementedError("Task 2 in the member guide")
 
 
 def main(results_dir: str, molecule: str, max_quanta: int, overwrite: bool):

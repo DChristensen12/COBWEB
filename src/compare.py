@@ -1,13 +1,20 @@
 import os
 
 import numpy as np
+from scipy.linalg import eigh
 
+from circuits import configs_from_bitstrings
 from utils import (
     discovery_curve,
     epstein_nesbet_order,
+    epstein_nesbet_targets,
     errors_by_size,
+    fundamental_errors_by_size,
+    fundamental_rows,
     reference_config,
     sample_order,
+    sample_targets_order,
+    target_states,
     weight_order,
 )
 
@@ -73,17 +80,57 @@ def main(
     )
     print(f"Found {np.mean(n_found):.0f} of {n_configs} configurations")
 
-    # Molecules also get a circuit state from circuits.py, sampled the same way
+    # Molecules also get circuit states from circuits.py, sampled the same way
     extra = {}
-    circuit_path = f"{results_dir}/circuits/{system}.npz"
-    if os.path.exists(circuit_path):
+    for key, suffix in [("circuit", ""), ("circuit_hh", "_heavy_hex")]:
+        circuit_path = f"{results_dir}/circuits/{system}{suffix}.npz"
+        if not os.path.exists(circuit_path):
+            continue
         c_circuit = np.load(circuit_path)["c"]
-        print(f"Sampling the LUCJ circuit, {n_repeats} repeats of {n_shots} shots")
+        print(f"Sampling {circuit_path}, {n_repeats} repeats of {n_shots} shots")
         err, found, disc = sample_errors(
             H, c_circuit, E[0], sizes, shots, n_shots, n_repeats, rng
         )
         print(f"Found {np.mean(found):.0f} of {n_configs} configurations")
-        extra = dict(err_circuit=err, n_found_circuit=found, discovered_circuit=disc)
+        extra.update(
+            {f"err_{key}": err, f"n_found_{key}": found, f"discovered_{key}": disc}
+        )
+
+    # A hardware or noisy simulator run is a single set of shots, kept in shot order
+    hardware_path = f"{results_dir}/hardware/{system}.npz"
+    if os.path.exists(hardware_path):
+        hw = np.load(hardware_path)
+        alpha, beta, labels = hw["alpha"], hw["beta"], data["labels"]
+        found, counts = configs_from_bitstrings(alpha, beta, labels)
+        seen = [
+            len(configs_from_bitstrings(alpha[:s], beta[:s], labels)[0]) for s in shots
+        ]
+        print(
+            f"{hw['backend']}: {counts.sum()} of {len(alpha)} shots usable, found {len(found)}"
+        )
+        extra.update(
+            err_hardware=errors_by_size(H, found, E[0], sizes),
+            discovered_hardware=np.where(shots <= len(alpha), seen, np.nan),
+            usable_hardware=counts.sum() / len(alpha),
+            backend_hardware=str(hw["backend"]),
+        )
+
+    # Vibrations also get the fundamentals, the band positions an IR spectrum shows.
+    # Perturbation theory and sampling both target the ground state and every
+    # one-quantum state at once, starting from the same seed rows
+    if "nu" in data.files:
+        rows = fundamental_rows(data["labels"])
+        _, C = eigh(H)
+        states = C[:, target_states(C, rows)]  # configurations x targets
+        print(f"Growing with Epstein-Nesbet for {len(rows)} target states")
+        order = epstein_nesbet_targets(H, list(rows), n_configs, batch)
+        extra["fund_en"] = fundamental_errors_by_size(H, order, rows, data["nu"], sizes)
+        print(f"Sampling the target states, {n_repeats} repeats of {n_shots} shots")
+        fund = []
+        for _ in range(n_repeats):
+            found, _ = sample_targets_order(states, n_shots, rng)
+            fund.append(fundamental_errors_by_size(H, found, rows, data["nu"], sizes))
+        extra["fund_sample"] = np.stack(fund)  # repeats x sizes
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     np.savez(

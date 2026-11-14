@@ -122,6 +122,7 @@ def test_formic_acid_is_set_up():
 
 def test_vci_harmonic_limit():
 
-    # TODO with phi3 and phi4 all zero, the VCI matrix should be exactly diagonal,
-    # with entries sum omega (n + 1/2). Build a small case and check both
-    raise NotImplementedError("write this test")
+    # TASK 3 in the member guide. With phi3 and phi4 all zero, the VCI matrix should
+    # be exactly diagonal, with entries sum omega (n + 1/2). Build a small case and
+    # check both
+    raise NotImplementedError("Task 3 in the member guide")

@@ -6,3 +6,6 @@ pytest
 pyscf
 ffsim
 geometric
+qiskit
+qiskit-aer
+qiskit-ibm-runtime
