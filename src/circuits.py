@@ -18,9 +18,7 @@ def interaction_pairs(norb: int, pattern: str):
     if pattern == "square":
         return pairs_aa, [(p, p) for p in range(norb)]
     if pattern == "heavy-hex":
-        # TASK 4 in the member guide. Return pairs_aa and the opposite-spin pairs
-        # (p, p) for every fourth orbital, starting from orbital 0
-        raise NotImplementedError("Task 4 in the member guide")
+        return pairs_aa, [(p, p) for p in range(0, norb, 4)]
     raise ValueError(f"unknown pattern {pattern}, use square or heavy-hex")
 
 
