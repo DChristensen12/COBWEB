@@ -8,7 +8,7 @@ Here, we introduce COBWEB, which combines two directions in quantum computationa
 # Thank you to all of those who contributed!
 
 <a href="https://github.com/DChristensen12/QCB_Quantum_Chemistry_Project/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=DChristensen12/QCB_Quantum_Chemistry_Project&max=100&columns=10&anon=1" width="60" alt="Contributors" />
+  <img src="https://contrib.rocks/image?repo=DChristensen12/QCB_Quantum_Chemistry_Project&max=100&columns=10&anon=1" width="15%" alt="Contributors" />
 </a>
 
 And a special thank you to our advisor Wendy Billings!
