@@ -70,3 +70,11 @@ def test_reference_config_is_hartree_fock():
         assert np.isclose(H[k, k], e_hf, rtol=0, atol=1e-8)
         assert labels[k, 0] == (1 << nelec[0]) - 1
         assert labels[k, 1] == (1 << nelec[1]) - 1
+
+def test_h6_matches_pyscf_fci():
+    assert "h6" in MOLECULES
+    h1, h2, ecore, norb, nelec, _ = integrals("h6")
+    H = fci_hamiltonian(h1, h2, ecore, norb, nelec)
+    assert np.isclose(
+        eigh(H, eigvals_only=True)[0], pyscf_fci_energy("h6"), rtol=0, atol=1e-8
+        )

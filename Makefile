@@ -1,5 +1,5 @@
 SYSTEMS = hubbard modes
-MOLECULES = h4 lih h2o
+MOLECULES = h4 lih h2o h6
 VIBRATIONS = water formic_acid
 
 hamiltonians:
