@@ -2,7 +2,6 @@ import logging
 import os
 from itertools import combinations_with_replacement, permutations, product
 from math import factorial
-
 import numpy as np
 from pyscf import dft, gto
 from pyscf.data import nist

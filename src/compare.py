@@ -1,8 +1,6 @@
 import os
-
 import numpy as np
 from scipy.linalg import eigh
-
 from circuits import configs_from_bitstrings
 from utils import (
     discovery_curve,

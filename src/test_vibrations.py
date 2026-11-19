@@ -1,11 +1,9 @@
 from math import comb
-
 import numpy as np
 import pytest
 from pyscf import gto
 from pyscf.hessian import thermo
 from scipy.linalg import eigh
-
 from hamiltonians import dvr_kinetic
 from vibrations import (
     EXPERIMENT,

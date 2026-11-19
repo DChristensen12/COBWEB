@@ -1,7 +1,6 @@
 import ffsim
 import numpy as np
 from scipy.linalg import eigh
-
 from circuits import configs_from_bitstrings, interaction_pairs, lucj_state
 from molecules import determinant_labels, fci_hamiltonian, integrals
 from utils import sample_order

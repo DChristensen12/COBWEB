@@ -1,9 +1,7 @@
 import os
-
 import ffsim
 import numpy as np
 from pyscf import cc, gto, scf
-
 from molecules import MOLECULES
 
 

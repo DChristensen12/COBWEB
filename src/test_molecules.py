@@ -1,7 +1,6 @@
 import numpy as np
 from pyscf import fci, gto, scf
 from scipy.linalg import eigh
-
 from molecules import MOLECULES, determinant_labels, fci_hamiltonian, integrals
 from utils import reference_config
 

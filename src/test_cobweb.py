@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from scipy.linalg import eigh
-
 from hamiltonians import coupled_modes, dvr_kinetic, hubbard_chain
 from utils import (
     discovery_curve,

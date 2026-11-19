@@ -1,5 +1,4 @@
 import os
-
 import numpy as np
 from pyscf import gto, mcscf, scf
 from pyscf.fci import cistring, direct_spin1
