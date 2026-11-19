@@ -11,6 +11,7 @@ MOLECULES = {
     "h4": dict(atom="H 0 0 0; H 0 0 1.5; H 0 0 3.0; H 0 0 4.5", basis="6-31g"),
     "lih": dict(atom="Li 0 0 0; H 0 0 1.6", basis="sto-3g"),
     "h2o": dict(atom="O 0 0 0; H 0.757 0.586 0; H -0.757 0.586 0", basis="sto-3g"),
+    "h6": dict(atom="H 0 0 0; H 0 0 2; H 0 0 4; H 0 0 6; H 0 0 8; H 0 0 10", basis="sto-3g")
 }
 
 
