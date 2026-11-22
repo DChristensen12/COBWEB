@@ -172,9 +172,17 @@ def epstein_nesbet_targets(
 
 
 def sample_targets_order(states: np.ndarray, n_shots: int, rng: np.random.Generator):
-    """Measure every target state, return what came back from all of them, most frequent first"""
+    l = len(states.T)
+    shotnum = int(n_shots/l)  # shots per state
+    totaldraws = []  # collects the results for each state
+    for i in range(l):
+      # does the shots for each state
+      weights = np.abs(states[:,i]) ** 2 / np.sum(np.abs(states[:,i]) ** 2)  # circuit states are complex
+      draws = rng.choice(len(weights), size=shotnum, p=weights)
+      totaldraws.append(draws)
+    alldraws = np.concatenate(totaldraws)  # combines the results into a single array
 
-    # TASK 5 in the member guide. states has one target state per column. Split the
-    # shots evenly between the columns, sample each one the way sample_order does,
-    # and return the rows that came back from all of them with their total counts
-    raise NotImplementedError("Task 5 in the member guide")
+    # organizes the results together
+    found, counts = np.unique(alldraws, return_counts=True)
+    order = np.argsort(counts, kind="stable")[::-1]
+    return found[order], counts[order]
