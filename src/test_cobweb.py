@@ -185,11 +185,22 @@ def test_subspace_fundamentals(small_vci):
 
 
 def test_epstein_nesbet_targets_full_space(small_vci):
+    H, labels, C, fundamental = small_vci
 
-    # TASK 6 in the member guide. Grow the space all the way with
-    # epstein_nesbet_targets and check the seeds come first, every row appears
-    # once, and the fundamentals at full size match nu
-    raise NotImplementedError("Task 6 in the member guide")
+    fund_rows = fundamental_rows(labels)  # single-mode rows
+
+    keeps = epstein_nesbet_targets(H, fund_rows, len(H))  # pertubation result
+
+    assert np.allclose(keeps[:len(fund_rows)], fund_rows)  # seeds are in front
+
+    assert len(keeps) == len(H)  # all rows are returned
+    for i in range(len(H)):
+      assert i in keeps
+    
+    # returned fundamentals are the same
+    full_fundamentals = subspace_fundamentals(H, np.arange(len(H)), fund_rows)
+    nesbet_fundamentals = subspace_fundamentals(H, keeps, fund_rows)
+    assert np.allclose(full_fundamentals, nesbet_fundamentals)
 
 
 def test_sample_targets_order(small_vci):
