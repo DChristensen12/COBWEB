@@ -185,10 +185,17 @@ def converged_quanta(
 ):
     """Smallest max_quanta whose fundamentals move by less than tol when it goes up by one"""
 
-    # TASK 2 in the member guide. Build the VCI matrix at max_quanta and at
-    # max_quanta + 1, starting from start, and return (max_quanta, fundamentals) for
-    # the first pair that agrees to within tol. Raise an error if nothing agrees by stop
-    raise NotImplementedError("Task 2 in the member guide")
+    # stop is the biggest basis we build, so the answer is at most stop - 1
+    previous = None
+    for max_quanta in range(start, stop + 1):
+        H, labels = vci_hamiltonian(omega, phi3, phi4, max_quanta)
+        nu = fundamentals(*eigh(H), labels)
+        if previous is not None and np.max(np.abs(nu - previous)) < tol:
+            return max_quanta - 1, previous
+        previous = nu
+    raise RuntimeError(
+        f"fundamentals still move by {tol} cm-1 or more at max_quanta = {stop}"
+    )
 
 
 def main(results_dir: str, molecule: str, max_quanta: int, overwrite: bool):
