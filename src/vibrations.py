@@ -17,7 +17,8 @@ METHOD = dict(xc="b3lyp", basis="6-31+g(d,p)")
 # Starting geometries in angstrom, the optimizer takes them the rest of the way
 VIBRATIONS = {
     "water": "O 0 0 0.117; H 0 0.757 -0.467; H 0 -0.757 -0.467",
-    # TASK 1 in the member guide. Add trans formic acid here as "formic_acid"
+    # Trans conformer, with the hydroxyl hydrogen on the carbonyl side
+    "formic_acid": "C 0 0 0; O 0 -1.064 0.554; O 0 1.189 0.619; H 0 0 -1.100; H 0 1.012 1.573",
 }
 
 # VCI basis size per molecule. Formic acid stops at 4 because its quartic force
@@ -29,9 +30,19 @@ MAX_QUANTA = {"water": 6, "formic_acid": 4}
 # Measured gas-phase fundamentals in cm-1, lowest to highest
 EXPERIMENT = {
     "water": [1595, 3657, 3756],
-    # TASK 1 in the member guide. Add the nine formic acid fundamentals from Table I
-    # of Nejad and Sibert, J. Chem. Phys. 154, 064301 (2021),
-    # https://doi.org/10.1063/5.0039237, not the older NIST list
+    # Trans-HCOOH, from Table I of Nejad and Sibert, J. Chem. Phys. 154, 064301
+    # (2021), https://doi.org/10.1063/5.0039237, not the older NIST list
+    "formic_acid": [
+        626.17,
+        640.73,
+        1033.47,
+        1104.85,
+        1306.2,
+        1379.05,
+        1776.83,
+        2942.06,
+        3570.5,
+    ],
 }
 
 
