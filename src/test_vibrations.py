@@ -120,7 +120,11 @@ def test_formic_acid_is_set_up():
 
 def test_vci_harmonic_limit():
 
-    # TASK 3 in the member guide. With phi3 and phi4 all zero, the VCI matrix should
-    # be exactly diagonal, with entries sum omega (n + 1/2). Build a small case and
-    # check both
-    raise NotImplementedError("Task 3 in the member guide")
+    # Three different frequencies, so swapping two modes would change the energies
+    omega = np.array([1600.0, 3700.0, 3800.0])
+    n = len(omega)
+    H, labels = vci_hamiltonian(omega, np.zeros((n,) * 3), np.zeros((n,) * 4), 4)
+
+    assert np.array_equal(H, np.diag(np.diag(H))), "H is not diagonal"
+    expected = [sum(w * (v + 0.5) for w, v in zip(omega, row)) for row in labels]
+    assert np.allclose(np.diag(H), expected, rtol=0, atol=1e-9)
